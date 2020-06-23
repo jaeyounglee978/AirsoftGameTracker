@@ -1,0 +1,17 @@
+{
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ],
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "target": "es6",
+        "moduleResolution": "node",
+        "outDir": "build",
+        "strictNullChecks": true
+    }
+}
