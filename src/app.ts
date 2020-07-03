@@ -1,7 +1,9 @@
 // https://gongzza.github.io/javascript/nodejs/typescript-express-starter-3/
 // require로 가져오면 any 타입이라서 ts를 쓰는 의미가 없다!
 import * as express from 'express'
+
 const app = express()
+app.set('view engine', 'ejs')
 
 app.use('/', require('./router/router'))
 
