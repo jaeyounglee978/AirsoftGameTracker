@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/jaeyounglee978/AirsoftGameTracker#readme",
   "dependencies": {
-    "ejs": "^1.0.0",
+    "ejs": ">=2.5.5",
     "express": "^4.17.1",
     "mysql": "^2.18.1",
     "sequelize": "^5.21.13",
@@ -40,7 +40,6 @@
     "gulp-concat": "^2.6.1",
     "gulp-livereload": "^4.0.2",
     "gulp-strip-debug": "^3.0.0",
-    "gulp-tsc": "^1.3.2",
     "gulp-typescript": "^6.0.0-alpha.1",
     "gulp-uglify": "^3.0.2",
     "knex": "^0.21.1",
