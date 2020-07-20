@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --require ts-node/register 'test/**/*.test.ts'",
-    "start": "npm run lint && tsc && node build/dist/server.js",
+    "start": "ejslint views/* && npm run lint && tsc && node build/dist/server.js",
     "lint": "tslint -p ."
   },
   "repository": {

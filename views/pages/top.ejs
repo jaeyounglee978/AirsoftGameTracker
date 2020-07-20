@@ -1,28 +1,22 @@
 <!doctype html>
 <html>
-  <head>
-    <% include ../partials/head %>
-  </head>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
   <script>
     function newChatroomNumberRequest() {
-      return fetch('http://localhost:3000/chat/new-chat').then(res => res.text())
+      return fetch('http://localhost:3000/new-game').then(res => res.text())
     }
     
     function newChatRoom() {
       let newRoomNum = newChatroomNumberRequest().then(id => {
-      window.location.href = 'http://localhost:3000/chat/' + id
+      console.log('http://localhost:3000/game/' + id + "?userId=asef&teamName=TEAM_1")
+      window.location.href = 'http://localhost:3000/game/' + id + "?userId=asef&teamName=TEAM_1"
       })
     }
   </script>
   <body>
 
     <button onclick="newChatRoom()">New ChatRoom</button>
-
-  <footer>
-    <% include ../partials/footer %>
-  </footer>
 
   </body>
 </html>

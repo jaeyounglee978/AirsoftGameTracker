@@ -1,13 +1,19 @@
 import PlayersInfo from '../data/players_info'
 import { TeamNames } from '../enums/team_names'
+import { Player } from '../data/player'
+import { PlayerStatus } from '../enums/player_status'
 
 let socketFunction = require('../socket')
+
+export function socketCheck (): Map<number, PlayersInfo> {
+  return socketFunction.socketCheck()
+}
 
 export function makeNewRoom (teamName: TeamNames, userId: string): number {
   let newroomId = Math.trunc(Math.random() * (100 - 0) + 0)
 
-  let newMap = new Map<TeamNames, string[]>()
-  newMap.set(teamName, [userId])
+  let newMap = new Map<TeamNames, Player[]>()
+  newMap.set(teamName, [new Player(userId, PlayerStatus.WAITING)])
   let newMemberMap = new PlayersInfo(newMap)
 
   socketFunction.addNewRoomToSocket(newroomId, newMemberMap)
@@ -17,22 +23,8 @@ export function makeNewRoom (teamName: TeamNames, userId: string): number {
   return newroomId
 }
 
-export function joinGameRoom (roomId: number, teamName: TeamNames, userId: string): number {
-  let memberMap = socketFunction.getRoomMemberMap(roomId)
-
-  let memberList = memberMap.teamMemberMap.get(teamName)
-
-  if (memberList === undefined) {
-    memberMap.teamMemberMap.set(teamName, [ userId ])
-  } else {
-    memberList.push(userId)
-  }
-
-  socketFunction.updateRoomMemberMap(roomId, memberMap)
-
-  console.log('update room id: ' + roomId.toString() + ', room info : ' + memberMap.toString())
-
-  return roomId
+export function getCurrentPlayerList (roomId: number): PlayersInfo {
+  return socketFunction.getRoomMemberMap(roomId)
 }
 
 export function isValidRoom (roomId: number) {

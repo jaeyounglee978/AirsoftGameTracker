@@ -9,45 +9,76 @@ let io = require('socket.io')(http)
 
 let room = new Map<number, PlayersInfo>()
 
+function getPlayerInfoByRoomId (roomId: number): PlayersInfo {
+  console.log(room)
+  console.log('check = ' + roomId.toString())
+  room.forEach(e => { console.log(e.teamMemberMap) })
+  console.log(room.has(roomId))
+  let players = room.get(roomId)
+  console.log(JSON.stringify(players))
+
+  if (players === undefined) {
+    throw Error
+  }
+
+  return players
+}
+
 io.on('connection', (socket: any) => {
   console.log('a user connected')
 
-  socket.on('disconnect', () => {
-    console.log('user disconnected')
-  })
+  // socket.on('disconnect', (roomId: number, teamName: TeamNames, userId: string) => {
+  //   console.log('user disconnected')
+  //   let players = getPlayerInfoByRoomId(roomId)
+  //   players.removePlayerFromTeam(teamName, userId)
 
-  socket.on('joinRoom', (roomId: number, userId: string, userName?: string) => {
-    let players = room.get(roomId)
+  //   socket.leave(
+  //     roomId,
+  //     () => { io.to(roomId).emit('userLeave', userId) }
+  //   )
+  // })
+
+  socket.on('joinRoom', (roomId: number, teamName: TeamNames, userId: string, userName?: string) => {
+    let players = getPlayerInfoByRoomId(roomId)
+    players.setPlayerToTeam(teamName, userId)
+
     socket.join(
       roomId,
-       () => {
-         let welcomeMessage = `${userName && userName || `guest(${userId})`} has joined the room`
-         console.log(welcomeMessage)
-         io.to(roomId).emit('joinRoom', welcomeMessage, players)
-       })
+      () => { io.to(roomId).emit('userJoin', teamName, userId) }
+    )
   })
 
   socket.on('leaveRoom', (roomId: number, teamName: TeamNames, userId: string, userName?: string) => {
-    // TODO: 이거 service 로직으로 옮기기.
-    let players = room.get(roomId)
-    let newPlayersArray = players!.teamMemberMap.get(teamName)!.filter((elem, index, array) => { return elem.userId !== userId })
-    players!.teamMemberMap.set(teamName, newPlayersArray)
-    room.set(roomId, players!)
+    let players = getPlayerInfoByRoomId(roomId)
+    players.removePlayerFromTeam(teamName, userId)
 
     socket.leave(
       roomId,
-       () => {
-         let goodByeMessage = `${userName && userName || `guest(${userId})`} has left the room`
-         console.log(goodByeMessage)
-         io.to(roomId).emit('leaveRoom', goodByeMessage, players)
-       })
+      () => { io.to(roomId).emit('userLeave', teamName, userId) }
+    )
   })
 
-  socket.on('died', (roomId: number, userId: string, msg: string) => {
-    console.log('message: ' + msg)
-    io.to(room.get(roomId)).emit('chat message', msg)
+  socket.on('ready', (roomId: number, teamName: TeamNames, userId: string, userName?: string) => {
+    getPlayerInfoByRoomId(roomId)
+
+    io.to(roomId).emit('userReady', teamName, userId)
+  })
+
+  socket.on('died', (roomId: number, teamName: TeamNames, userId: string) => {
+    let players = getPlayerInfoByRoomId(roomId)
+    let result = players.userKiaAndCheckGameEnd(teamName, userId)
+
+    io.to(room.get(roomId)).emit('userDied', teamName, userId)
+
+    if (result !== undefined) {
+      io.to(room.get(roomId)).emit('gameEnd', teamName)
+    }
   })
 })
+
+export function socketCheck (): Map<number, PlayersInfo> {
+  return room
+}
 
 export function addNewRoomToSocket (roomId: number, roomMemberMap: PlayersInfo) {
   if (room.has(roomId)) {
@@ -55,6 +86,7 @@ export function addNewRoomToSocket (roomId: number, roomMemberMap: PlayersInfo) 
   }
 
   room.set(roomId, roomMemberMap)
+  console.log(room)
 }
 
 export function getRoomMemberMap (roomId: number): PlayersInfo {

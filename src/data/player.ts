@@ -6,6 +6,6 @@ export class Player {
 
   constructor (userId: string, playerStatus?: PlayerStatus) {
     this.userId = userId
-    this.playerStatus = playerStatus && playerStatus || PlayerStatus.REST
+    this.playerStatus = playerStatus && playerStatus || PlayerStatus.WAITING
   }
 }

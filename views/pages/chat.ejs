@@ -15,44 +15,80 @@
   </head>
   
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-  <script>
+  <script type="text/javascript" language="javascript">
     var socket = io();
-    let roomNum = <%= roomId %>;
+    var userId = "<%= userId %>";
+    var roomId = "<%= roomId %>";
+    var players = "<%= JSON.stringify(players) %>";
+    var teamName = "<%= teamName %>";
 
-    $(function () {
-      socket.emit('joinRoom', roomNum)
+    console.log("htllllalsdflasfjlds")
+    console.log(userId)
+    console.log(roomId)
+    console.log(players)
+    console.log(teamName)
 
-      $('form').submit(function(e){
-        e.preventDefault(); // prevents page reloading
-        socket.emit('chat message', roomNum, $('#m').val());
-        $('#m').val('');
-        return false;
-      });
+    var team1List = document.getElementById('TEAM_1');
+    var team2List = document.getElementById('TEAM_2');
 
-      socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
-      });
-
-      socket.on('leaveRoom', (num) => {
-        $('#messages').append($('<li>').text('someone leaved :('));
-      });
-
-      socket.on('joinRoom', (num) => {
-        $('#messages').append($('<li>').text('someone joined :)'));
-      });
-    });
+    function getTeamList(teamName) {
+        if (teamName === 'TEAM_1')
+          return team1List
+        else if (teamName === 'TEAM_2')
+        return team2List
+    }
 
     function leaveChat() {
-      socket.emit('leaveRoom', roomNum)
+      socket.emit('leaveRoom', roomId, teamName, userId)
       window.location.href = 'http://localhost:3000/top'
     }
+
+    function died() {
+      socket.emit('leaveRoom', roomId, teamName, userId)
+      return null
+    }
+
+    socket.emit('joinRoom', roomId, teamName, userId)
+
+    socket.on('userJoin', (tn, ui) => {
+      console.log(`Team.${tn}: user(${ui}) joined`)
+      let list = getTeamList(tn)
+      
+      var newUserElem = document.createElement('li');
+      newUserElem.setAttribute("id", ui)
+      newUserElem.appendChild(document.createTextNode(`${ui} : WAITING`));
+      list.appendChild(entry);
+    });
+
+    socket.on('userReady', (tn, ui) => {
+      console.log(`Team.${tn}: user(${ui}) ready`)
+      var entry = document.getElementById(ui);
+      entry.childNodes[0].nodeValue = `${ui} : READY`
+    });
+
+    socket.on('userLeave', (tn, ui) => {
+      var entry = document.getElementById(ui);
+      entry.parentNode.removeChild(entry)
+    });
+
+    socket.on('userDied', (tn, ui) => {
+      console.log(`Team.${tn}: user(${ui}) died X(`);
+
+      var entry = document.getElementById(ui);
+      entry.childNodes[0].nodeValue = `${ui} : DIED`
+    });
+
+    socket.on('gameEnd', function(tn){
+      console.log(`Game Set! Team.${tn} lose`);
+    });
   </script>
   <body>
-    <ul id="messages"></ul>
+    <ul id="TEAM_1"></ul>
+    <ul id="TEAM_2`"></ul>
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
       <button onclick="leaveChat()">Leave</button>
+      <button onclick="died()">KIA test</button>
     </form>
   </body>
 </html>

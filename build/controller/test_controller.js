@@ -1,35 +1,43 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.participateChat = exports.makeNewChat = exports.top = exports.chat = void 0;
-const socket_1 = require("../socket");
+exports.joinGameRoom = exports.makeNewGameRoom = exports.socketCheck = exports.top = void 0;
+let roomFunctionService = require('./../service/room_function_service');
 let path = require('path');
+function top(req, res) {
+    res.render('pages/top');
+}
+exports.top = top;
+function socketCheck(req, res) {
+    let socketRoomInfo = roomFunctionService.socketCheck();
+    res.send(JSON.stringify(Array.from(socketRoomInfo.entries())));
+}
+exports.socketCheck = socketCheck;
 // https://stackoverflow.com/questions/14594121/express-res-sendfile-throwing-forbidden-error
-function chat(req, res) {
-    console.log('id = ' + req.params.chatroomId);
-    const id = Number(req.params.chatroomId);
-    const isValid = socket_1.isValidRoom(id);
+function makeNewGameRoom(req, res) {
+    let teamName = req.params.teamName;
+    let userId = req.params.userId;
+    let newRoomId = roomFunctionService.makeNewRoom(teamName, userId);
+    res.send(newRoomId.toString());
+}
+exports.makeNewGameRoom = makeNewGameRoom;
+function joinGameRoom(req, res) {
+    const roomId = Number(req.params.gameRoomId);
+    const userId = String(req.query.userId);
+    const teamName = String(req.query.teamName);
+    const isValid = roomFunctionService.isValidRoom(roomId);
     if (!isValid) {
         res.status(404);
         res.send('room not found');
     }
     else {
-        res.render('pages/chat', { roomId: id });
+        const playersInfo = roomFunctionService.getCurrentPlayerList(roomId);
+        console.log(`membermap = ${playersInfo.teamMemberMap}`);
+        res.render('pages/chat', {
+            userId: userId,
+            roomId: roomId,
+            players: playersInfo.teamMemberMap,
+            teamName: teamName
+        });
     }
 }
-exports.chat = chat;
-function top(req, res) {
-    res.render('pages/top');
-}
-exports.top = top;
-function makeNewChat(req, res) {
-    let newroomnum = Math.trunc(Math.random() * (100 - 0) + 0);
-    console.log('newroomnum = ' + newroomnum);
-    socket_1.makeNewRoom(newroomnum);
-    res.send(newroomnum.toString());
-}
-exports.makeNewChat = makeNewChat;
-function participateChat(req, res) {
-    console.log(req.params.chatroomId);
-    res.json(req.query);
-}
-exports.participateChat = participateChat;
+exports.joinGameRoom = joinGameRoom;

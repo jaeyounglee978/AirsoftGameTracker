@@ -1,5 +1,6 @@
 export enum PlayerStatus {
+  WAITING,
+  READY,
   ALIVE,
-  REST,
   DEAD
 }
