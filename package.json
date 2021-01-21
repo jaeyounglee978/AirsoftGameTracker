@@ -23,7 +23,7 @@
     "express": "^4.17.1",
     "mysql": "^2.18.1",
     "sequelize": "^5.21.13",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.4.0"
   },
   "devDependencies": {
     "@types/bookshelf": "^1.1.1",
